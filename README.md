@@ -1,2 +1,2 @@
-# xunit_test_csharp_dotnetecore
+# C# dotNet Core tests using xUnit
 Studying automated tests with xunit and dotnet core
