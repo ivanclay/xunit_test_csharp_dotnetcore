@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Bogus;
+using Moq;
 using OnlineCouse.Domain.Courses;
 using System;
 using Xunit;
@@ -7,28 +8,38 @@ namespace OnlineCourse.DomainTest.Courses
 {
     public class CourseStorageTest
     {
+        private CourseDto _courseDto;
+        private Mock<ICourseRepository> _courseRepositoryMock;
+        private CourseStorage _courseStorage;
+        public CourseStorageTest()
+        {
+            var fake = new Faker();
+
+            _courseDto = new CourseDto
+            {
+                Name = fake.Random.Words(),
+                Description = fake.Lorem.Paragraph(),
+                Duration = fake.Random.Double(50, 1000),
+                Audience = 1,
+                Cost = fake.Random.Double(1000, 2000)
+            };
+
+            _courseRepositoryMock = new Mock<ICourseRepository>();
+            _courseStorage = new CourseStorage(_courseRepositoryMock.Object);
+        }
+
         [Fact]
         public void MustAddCourse()
         {
-            var courseDto = new CourseDto
-            {
-                Name = "Name",
-                Description = "Description",
-                Duration = 80,
-                Audience = 0,
-                Cost = 100
-            };
+            _courseStorage.ToStorage(_courseDto);
 
-            var courseRepositoryMock = new Mock<ICourseRepository>();
-
-            var courseStorage = new CourseStorage(courseRepositoryMock.Object);
-
-            courseStorage.ToStorage(courseDto);
-
-            courseRepositoryMock.Verify(r => r.ToStorage(It.IsAny<Course>()));
+            _courseRepositoryMock.Verify(r => r.ToStorage(
+                It.Is<Course>(
+                    c => c.Name == _courseDto.Name &&
+                         c.Description == _courseDto.Description
+                    )
+            ));
         }
-
-
     }
 
     public interface ICourseRepository 
@@ -53,10 +64,10 @@ namespace OnlineCourse.DomainTest.Courses
 
     public class CourseDto
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int Duration { get; set; }
-        public int Audience { get; set; }
-        public int Cost { get; set; }
+        public string Name { get;  set; }
+        public string Description { get;  set; }
+        public double Duration { get;  set; }
+        public int Audience { get;  set; }
+        public double Cost { get;  set; }
     }
 }
